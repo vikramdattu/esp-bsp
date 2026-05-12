@@ -6,7 +6,6 @@ import json
 import shutil
 import argparse
 from zipfile import ZipFile
-from typing import Optional
 
 # Directory of all boards
 BOARDS_DIR = "boards/"
