@@ -7,7 +7,6 @@ on:
   schedule:
     - cron: '0 20 * * SAT'
   workflow_dispatch:
-  # TODO: Remove
   pull_request:
     types: [opened, reopened, synchronize, labeled]
 
@@ -112,6 +111,8 @@ jobs:
           path: bsp_metrics.json
   upload_metrics:
     runs-on: ubuntu-latest
+    # Dry run on pull requests and manual triggers
+    if: github.repository_owner == 'espressif' && (github.event_name == 'schedule' || github.event_name == 'push')
     needs: run_benchmarks
     env:
       ESP_METRICS_S3_SERVER: https://idf-s3.espressif.cn:9000
