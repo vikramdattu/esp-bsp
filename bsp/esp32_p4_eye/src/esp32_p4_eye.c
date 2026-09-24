@@ -9,6 +9,7 @@
 #include "driver/ledc.h"
 #include "driver/spi_master.h"
 #include "esp_err.h"
+#include "esp_idf_version.h"
 #include "esp_log.h"
 #include "esp_check.h"
 #include "esp_spiffs.h"
@@ -571,6 +572,13 @@ esp_err_t bsp_display_new(const bsp_display_config_t *config, esp_lcd_panel_hand
         .lcd_param_bits = LCD_PARAM_BITS,
         .spi_mode = 0,
         .trans_queue_depth = 10,
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 5) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)) || \
+    ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 2)
+        /* Let the SPI DMA read PSRAM draw buffers (buff_spiram + buff_dma) directly; without this
+         * esp_lcd memcpy's every flushed area into an internal DMA bounce buffer first.
+         * The flag exists in IDF v5.5.5+ and v6.0.2+ only (absent in v5.4.x, v5.5.0-v5.5.4, v6.0.0, v6.0.1). */
+        .flags.psram_dma_direct = 1,
+#endif
     };
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)BSP_LCD_SPI_NUM, &io_config, ret_io), err, TAG,
                       "New panel IO failed");
